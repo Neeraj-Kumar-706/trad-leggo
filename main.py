@@ -5,9 +5,30 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import datetime
 import random
+import dash_auth
+from dotenv import load_dotenv
+import os
 
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
+
+# Load environment variables
+load_dotenv()
+
+# Get credentials from .env
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
+print("Username:", USERNAME)
+print("Password:", PASSWORD)
+# Set up authentication
+VALID_USERNAME_PASSWORD_PAIRS = {
+    USERNAME: PASSWORD
+}
+
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
 
 # Example data storage for the graph
 graph_data = {
@@ -32,6 +53,20 @@ app.layout = dbc.Container([
                                 children=html.Div([
                                     html.H5("PnL (%)", id="pnl-percentage-label", style={"color": "lime", "font-size": "20px", "text-align": "center"}),
                                     html.H5("PnL (Absolute)", id="pnl-absolute-label", style={"color": "lime", "font-size": "20px", "text-align": "center", "margin-top": "20px"}),
+
+                                    # Notice Board (New Widget)
+                                    html.Div(
+                                        id="notice-board",
+                                        children="",
+                                        style={
+                                            "color": "yellow",
+                                            "font-size": "16px",
+                                            "text-align": "center",
+                                            "margin-top": "20px",
+                                            "height": "40px",  # Fixed height to keep space even when empty
+                                            "overflow": "hidden",
+                                        }
+                                    ),
                                 ], style={"height": "100%", "display": "flex", "flex-direction": "column", "justify-content": "center"})
                             )
                         ], width=3),  # 30% width for labels
@@ -280,6 +315,16 @@ def update_watchlist(n_clicks, symbols):
     return [header] + rows
 
 
+@app.callback(
+    Output("notice-board", "children"),
+    Input("log-box", "value")  # Connect to the log system (log-box)
+)
+def update_notice_board(log_value):
+    # Placeholder logic: Keep it blank for now
+    # Later, you can parse `log_value` to extract critical notices
+    return "the risk i am bear"  # No notices for now
+
+
 # Run the app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port='8050',debug=True)
